@@ -68,3 +68,162 @@ async function initSession(){const {data:{session}}=await supabaseClient.auth.ge
 supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session)closeAuth();else openAuth()});
 
 renderMarkets();renderPortfolio();renderHistory();updateTrade();initSession();
+
+
+
+/* ===== JR Trade V2.1 — Dashboard + Wallet ===== */
+(function () {
+  let walletRefreshButton;
+
+  function money(value) {
+    const n = Number(value || 0);
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(n);
+  }
+
+  function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  async function getClient() {
+    if (window.supabaseClient) return window.supabaseClient;
+
+    if (!window.supabase || !window.SUPABASE_URL || !window.SUPABASE_PUBLISHABLE_KEY) {
+      throw new Error("Supabase client/configuration is not available.");
+    }
+
+    window.supabaseClient = window.supabase.createClient(
+      window.SUPABASE_URL,
+      window.SUPABASE_PUBLISHABLE_KEY
+    );
+    return window.supabaseClient;
+  }
+
+  async function loadWallet() {
+    const client = await getClient();
+    setText("walletStatus", "Loading...");
+    setText("walletBalance", "$0.00");
+
+    const { data: { user }, error: userError } = await client.auth.getUser();
+    if (userError) throw userError;
+
+    if (!user) {
+      setText("walletStatus", "Sign in to view your wallet.");
+      renderAssets([]);
+      return;
+    }
+
+    const { data: wallet, error: walletError } = await client
+      .from("wallets")
+      .select("id,balance_usd,created_at")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (walletError) throw walletError;
+
+    if (!wallet) {
+      setText("walletStatus", "Wallet not found yet.");
+      renderAssets([]);
+      return;
+    }
+
+    setText("walletBalance", money(wallet.balance_usd));
+    setText("walletStatus", "Demo wallet • " + user.email);
+
+    const { data: rows, error: assetsError } = await client
+      .from("wallet_assets")
+      .select("amount, asset_id, assets(symbol,name,price_usd,change_24h)")
+      .eq("wallet_id", wallet.id);
+
+    if (assetsError) throw assetsError;
+
+    renderAssets(rows || []);
+  }
+
+  function renderAssets(rows) {
+    const box = document.getElementById("walletAssets");
+    if (!box) return;
+
+    const visible = rows.filter(row => Number(row.amount || 0) > 0);
+
+    if (!visible.length) {
+      box.innerHTML = '<div class="data-muted">No crypto holdings yet. Your demo wallet is ready.</div>';
+      return;
+    }
+
+    box.innerHTML = visible.map(row => {
+      const a = row.assets || {};
+      const amount = Number(row.amount || 0);
+      const price = Number(a.price_usd || 0);
+      const value = amount * price;
+
+      return `
+        <div class="asset-row">
+          <div>
+            <strong>${escapeHtml(a.symbol || "—")}</strong>
+            <div class="data-muted">${escapeHtml(a.name || "")}</div>
+          </div>
+          <div class="asset-right">
+            <strong>${amount.toLocaleString("en-US", {maximumFractionDigits: 8})}</strong>
+            <div class="data-muted">${money(value)}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    }[char]));
+  }
+
+  async function initDashboardWallet() {
+    walletRefreshButton = document.getElementById("refreshWalletBtn");
+    if (walletRefreshButton) {
+      walletRefreshButton.addEventListener("click", async () => {
+        walletRefreshButton.disabled = true;
+        try {
+          await loadWallet();
+        } catch (error) {
+          console.error("Wallet refresh error:", error);
+          setText("walletStatus", "Unable to load wallet.");
+        } finally {
+          walletRefreshButton.disabled = false;
+        }
+      });
+    }
+
+    try {
+      await loadWallet();
+    } catch (error) {
+      console.error("Dashboard wallet error:", error);
+      setText("walletStatus", "Unable to connect to wallet.");
+    }
+
+    const client = await getClient();
+    client.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setTimeout(() => loadWallet().catch(console.error), 0);
+      } else {
+        setText("walletBalance", "$0.00");
+        setText("walletStatus", "Sign in to view your wallet.");
+        renderAssets([]);
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initDashboardWallet);
+  } else {
+    initDashboardWallet();
+  }
+
+  window.JRTrade = window.JRTrade || {};
+  window.JRTrade.loadWallet = loadWallet;
+})();

@@ -168,5 +168,26 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="script.js"></script>
+
+<section id="dashboard-data" class="dashboard-data">
+  <div class="data-card">
+    <div class="data-card-head">
+      <span>Wallet balance</span>
+      <button id="refreshWalletBtn" type="button" class="small-btn">Refresh</button>
+    </div>
+    <div id="walletBalance" class="data-value">$0.00</div>
+    <div id="walletStatus" class="data-muted">Loading...</div>
+  </div>
+
+  <div class="data-card">
+    <div class="data-card-head">
+      <span>Your assets</span>
+    </div>
+    <div id="walletAssets" class="asset-list">
+      <div class="data-muted">Loading assets...</div>
+    </div>
+  </div>
+</section>
+
 </body>
 </html>

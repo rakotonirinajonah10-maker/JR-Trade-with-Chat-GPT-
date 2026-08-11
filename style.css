@@ -10,3 +10,82 @@ button,input,select{font:inherit}button{cursor:pointer}.app-shell{display:flex;m
 
 
 .auth-backdrop{position:fixed;inset:0;background:rgba(3,6,12,.82);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000}.auth-backdrop.hidden{display:none}.auth-card{width:min(430px,100%);background:var(--card,#111722);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.45)}.auth-brand{display:flex;gap:12px;align-items:center;margin-bottom:22px}.auth-brand span{display:block;font-size:12px;opacity:.6}.auth-card h2{margin:0 0 8px}.auth-card label{display:block;margin:16px 0 7px;font-size:13px}.auth-card input{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:inherit;outline:none}.auth-card input:focus{border-color:#7aa2ff}.auth-switch{margin-top:16px;width:100%;text-align:center}.auth-message{min-height:20px;font-size:13px;margin:12px 0 0}.account-line{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;margin:4px 0 16px;border-bottom:1px solid rgba(255,255,255,.08)}.account-line span{overflow:hidden;text-overflow:ellipsis}.light .auth-card{background:#fff}.light .auth-card input{background:#f4f6fa;color:#111;border-color:#d9dee8}
+
+
+/* ===== JR Trade V2.1 — Dashboard + Wallet ===== */
+.dashboard-data {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.data-card {
+  border: 1px solid rgba(127, 127, 127, .18);
+  border-radius: 18px;
+  padding: 18px;
+  background: rgba(127, 127, 127, .06);
+}
+
+.data-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.data-value {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+}
+
+.data-muted {
+  opacity: .65;
+  font-size: .85rem;
+  margin-top: 4px;
+  word-break: break-word;
+}
+
+.small-btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.small-btn:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+.asset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.asset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(127, 127, 127, .14);
+}
+
+.asset-row:last-child {
+  border-bottom: 0;
+}
+
+.asset-right {
+  text-align: right;
+}
+
+@media (max-width: 700px) {
+  .dashboard-data {
+    grid-template-columns: 1fr;
+  }
+}
