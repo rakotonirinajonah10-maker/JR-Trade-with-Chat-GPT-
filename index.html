@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b12">
+  <title>JR Trade — Web3 Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">JR</div>
+        <div>
+          <strong>JR Trade</strong>
+          <span>Web3 Exchange</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-page="dashboard"><span>⌂</span>Accueil</button>
+        <button class="nav-item" data-page="wallet"><span>◈</span>Wallet</button>
+        <button class="nav-item" data-page="markets"><span>◌</span>Marché</button>
+        <button class="nav-item" data-page="trade"><span>↕</span>Acheter / Vendre</button>
+        <button class="nav-item" data-page="history"><span>◷</span>Historique</button>
+        <button class="nav-item" data-page="notifications"><span>♢</span>Notifications</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="nav-item" data-page="profile"><span>◉</span>Profil</button>
+        <button class="nav-item" id="themeToggle"><span>☼</span>Mode clair</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+        <div class="search">
+          <span>⌕</span>
+          <input id="globalSearch" type="search" placeholder="Rechercher une crypto...">
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="notificationBtn" aria-label="Notifications">♢<b class="dot"></b></button>
+          <button class="avatar" data-page="profile">JR</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <div id="toast" class="toast"></div>
+
+        <section class="page active" id="page-dashboard">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">TABLEAU DE BORD</p>
+              <h1>Bienvenue sur JR Trade</h1>
+              <p class="muted">Gérez votre portefeuille crypto depuis un seul endroit.</p>
+            </div>
+            <div class="heading-actions">
+              <button class="btn ghost" data-page="wallet">Recevoir</button>
+              <button class="btn primary" data-page="trade">Trader</button>
+            </div>
+          </div>
+
+          <div class="stat-grid">
+            <article class="card balance-card">
+              <div class="card-top"><span>Valeur du portefeuille</span><span class="pill positive">+8,42%</span></div>
+              <h2 id="portfolioValue">$24,680.42</h2>
+              <p class="muted">≈ 59,400,000 MGA</p>
+              <div class="mini-chart"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            </article>
+            <article class="card">
+              <div class="card-top"><span>Profit / perte</span><span>24 h</span></div>
+              <h2 class="positive" id="profitValue">+$1,924.60</h2>
+              <p class="muted">Performance du portefeuille</p>
+            </article>
+            <article class="card">
+              <div class="card-top"><span>Actifs</span><span>4</span></div>
+              <h2>4 <small>crypto</small></h2>
+              <p class="muted">BTC · ETH · SOL · USDT</p>
+            </article>
+          </div>
+
+          <div class="two-col">
+            <article class="card">
+              <div class="section-title"><div><h3>Votre portefeuille</h3><p class="muted">Répartition des actifs</p></div><button class="text-btn" data-page="wallet">Voir tout →</button></div>
+              <div id="portfolioList" class="asset-list"></div>
+            </article>
+
+            <article class="card">
+              <div class="section-title"><div><h3>Marché</h3><p class="muted">Prix indicatifs</p></div><button class="text-btn" data-page="markets">Marché →</button></div>
+              <div id="marketPreview" class="market-list"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" id="page-wallet">
+          <div class="page-heading"><div><p class="eyebrow">WALLET</p><h1>Votre portefeuille</h1><p class="muted">Suivez vos actifs numériques.</p></div><button class="btn primary" id="receiveBtn">＋ Recevoir</button></div>
+          <article class="card wallet-hero"><div><span class="muted">Solde total estimé</span><h2>$24,680.42</h2><div class="wallet-actions"><button class="btn primary" data-page="trade">Acheter / Vendre</button><button class="btn ghost" id="copyAddress">Copier l'adresse</button></div></div><div class="wallet-address"><span>Adresse de démonstration</span><code>0xJR...7A21</code></div></article>
+          <article class="card"><div class="section-title"><h3>Vos actifs</h3><span class="muted">4 actifs</span></div><div id="walletAssets" class="asset-list"></div></article>
+        </section>
+
+        <section class="page" id="page-markets">
+          <div class="page-heading"><div><p class="eyebrow">MARCHÉ</p><h1>Marchés crypto</h1><p class="muted">Données de démonstration — non financières en temps réel.</p></div><div class="market-tabs"><button class="tab active">Tous</button><button class="tab">Favorites</button></div></div>
+          <article class="card table-card"><div class="table-head"><span>Actif</span><span>Prix</span><span>24 h</span><span>Action</span></div><div id="marketTable"></div></article>
+        </section>
+
+        <section class="page" id="page-trade">
+          <div class="page-heading"><div><p class="eyebrow">TRADING</p><h1>Acheter / Vendre</h1><p class="muted">Mode démo : aucune transaction réelle n'est exécutée.</p></div><span class="demo-badge">MODE DÉMO</span></div>
+          <div class="trade-layout">
+            <article class="card trade-card">
+              <div class="trade-switch"><button class="active" data-side="buy">Acheter</button><button data-side="sell">Vendre</button></div>
+              <label>Actif</label>
+              <select id="tradeAsset"><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="SOL">Solana (SOL)</option><option value="USDT">Tether (USDT)</option></select>
+              <label>Montant en USD</label>
+              <div class="input-wrap"><span>$</span><input id="tradeAmount" type="number" min="1" value="1000"></div>
+              <div class="quick"><button data-amount="100">100</button><button data-amount="500">500</button><button data-amount="1000">1,000</button><button data-amount="5000">5,000</button></div>
+              <div class="trade-summary"><div><span>Prix indicatif</span><b id="tradePrice">$67,420.00</b></div><div><span>Montant crypto</span><b id="tradeQuantity">0.01483 BTC</b></div><div><span>Frais démo</span><b>$0.00</b></div></div>
+              <button class="btn primary full" id="executeTrade">Confirmer l'ordre</button>
+            </article>
+            <article class="card chart-card"><div class="section-title"><div><h3 id="chartTitle">BTC / USD</h3><p class="muted">Graphique de démonstration</p></div><span class="pill positive">+5.24%</span></div><div class="chart"><svg viewBox="0 0 700 280" preserveAspectRatio="none"><polyline points="0,220 55,190 100,205 145,155 190,175 235,120 280,140 325,92 370,110 415,70 460,96 505,48 550,78 595,35 650,62 700,20" fill="none" stroke="currentColor" stroke-width="4"/><polyline points="0,250 700,250" fill="none" stroke="currentColor" stroke-opacity=".12"/></svg></div><div class="chart-labels"><span>09:00</span><span>12:00</span><span>15:00</span><span>18:00</span><span>21:00</span></div></article>
+          </div>
+        </section>
+
+        <section class="page" id="page-history">
+          <div class="page-heading"><div><p class="eyebrow">HISTORIQUE</p><h1>Vos transactions</h1><p class="muted">Activité du portefeuille de démonstration.</p></div></div>
+          <article class="card table-card"><div class="table-head history-head"><span>Type</span><span>Actif</span><span>Montant</span><span>Statut</span><span>Date</span></div><div id="historyTable"></div></article>
+        </section>
+
+        <section class="page" id="page-notifications">
+          <div class="page-heading"><div><p class="eyebrow">NOTIFICATIONS</p><h1>Notifications</h1><p class="muted">Restez informé de votre activité.</p></div></div>
+          <article class="card notification-list">
+            <div class="notification unread"><span class="notif-icon">↗</span><div><b>Marché en hausse</b><p>BTC a progressé dans cette démonstration.</p><small>Il y a 12 min</small></div></div>
+            <div class="notification"><span class="notif-icon">✓</span><div><b>Portefeuille synchronisé</b><p>Vos données locales sont à jour.</p><small>Il y a 1 h</small></div></div>
+            <div class="notification"><span class="notif-icon">!</span><div><b>Rappel sécurité</b><p>N'ajoutez jamais une clé privée à une interface non vérifiée.</p><small>Hier</small></div></div>
+          </article>
+        </section>
+
+        <section class="page" id="page-profile">
+          <div class="page-heading"><div><p class="eyebrow">PROFIL</p><h1>Compte JR Trade</h1><p class="muted">Paramètres de l'application.</p></div></div>
+          <div class="profile-grid">
+            <article class="card profile-card"><div class="big-avatar">JR</div><h2>JR Trade User</h2><p class="muted">Compte démo</p><span class="verified">✓ Compte vérifié (démo)</span></article>
+            <article class="card settings"><h3>Paramètres</h3><label class="setting"><span>Notifications</span><input type="checkbox" checked><i></i></label><label class="setting"><span>Confirmation avant ordre</span><input type="checkbox" checked><i></i></label><label class="setting"><span>Masquer les soldes</span><input type="checkbox" id="hideBalances"><i></i></label></article>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <div class="modal-backdrop" id="modal"><div class="modal"><button class="modal-close" id="modalClose">×</button><h3 id="modalTitle">Recevoir des crypto</h3><p class="muted">Adresse de démonstration</p><code class="address-box">0xJRTradeDemo8f2c1A9d7A21</code><button class="btn primary full" id="modalCopy">Copier l'adresse</button></div></div>
+  <script src="script.js"></script>
+</body>
+</html>
