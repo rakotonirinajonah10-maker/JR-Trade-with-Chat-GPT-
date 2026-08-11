@@ -140,13 +140,33 @@
           <div class="page-heading"><div><p class="eyebrow">PROFIL</p><h1>Compte JR Trade</h1><p class="muted">Paramètres de l'application.</p></div></div>
           <div class="profile-grid">
             <article class="card profile-card"><div class="big-avatar">JR</div><h2>JR Trade User</h2><p class="muted">Compte démo</p><span class="verified">✓ Compte vérifié (démo)</span></article>
-            <article class="card settings"><h3>Paramètres</h3><label class="setting"><span>Notifications</span><input type="checkbox" checked><i></i></label><label class="setting"><span>Confirmation avant ordre</span><input type="checkbox" checked><i></i></label><label class="setting"><span>Masquer les soldes</span><input type="checkbox" id="hideBalances"><i></i></label></article>
+            <article class="card settings"><h3>Paramètres</h3><div class="account-line"><span id="accountEmail">Non connecté</span><button class="btn ghost" id="signOutBtn">Déconnexion</button></div><label class="setting"><span>Notifications</span><input type="checkbox" checked><i></i></label><label class="setting"><span>Confirmation avant ordre</span><input type="checkbox" checked><i></i></label><label class="setting"><span>Masquer les soldes</span><input type="checkbox" id="hideBalances"><i></i></label></article>
           </div>
         </section>
       </section>
     </main>
   </div>
+
+  <div class="auth-backdrop" id="authModal">
+    <div class="auth-card">
+      <div class="auth-brand"><div class="brand-mark">JR</div><div><strong>JR Trade</strong><span>Compte sécurisé</span></div></div>
+      <h2 id="authTitle">Connexion</h2>
+      <p class="muted" id="authSubtitle">Connectez-vous à votre compte JR Trade.</p>
+      <form id="authForm">
+        <label>Email</label>
+        <input id="authEmail" type="email" required autocomplete="email" placeholder="vous@example.com">
+        <label>Mot de passe</label>
+        <input id="authPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="••••••••">
+        <input id="authUsername" type="text" autocomplete="nickname" placeholder="Nom d'utilisateur (inscription)" style="display:none">
+        <button class="btn primary full" id="authSubmit" type="submit">Se connecter</button>
+      </form>
+      <button class="text-btn auth-switch" id="authSwitch">Créer un compte</button>
+      <p class="auth-message" id="authMessage"></p>
+    </div>
+  </div>
   <div class="modal-backdrop" id="modal"><div class="modal"><button class="modal-close" id="modalClose">×</button><h3 id="modalTitle">Recevoir des crypto</h3><p class="muted">Adresse de démonstration</p><code class="address-box">0xJRTradeDemo8f2c1A9d7A21</code><button class="btn primary full" id="modalCopy">Copier l'adresse</button></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

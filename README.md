@@ -1,13 +1,11 @@
-# JR Trade V1
+# JR Trade V2
 
-Prototype Web3 / crypto exchange en mode démo.
+JR Trade V2 est un prototype Web3 avec authentification Supabase et opérations d’achat/vente en mode démo.
 
-## Lancer
-Ouvrir `index.html` dans un navigateur.
+## Configuration
+1. Ouvre `supabase-config.js`.
+2. Remplace `https://xxxxxxxx.supabase.co` par ton Project URL.
+3. Remplace `sb_publishable_xxxxxxxxx` par ta Publishable key.
+4. Ne mets jamais de `sb_secret_...` dans ce projet.
 
-## Fichiers
-- index.html : structure et pages
-- style.css : design responsive
-- script.js : navigation et interactions
-
-Aucune vraie transaction blockchain n'est exécutée dans cette version.
+Le site peut être publié sur GitHub Pages.
