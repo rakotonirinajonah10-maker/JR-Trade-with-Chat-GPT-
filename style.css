@@ -89,3 +89,6 @@ button,input,select{font:inherit}button{cursor:pointer}.app-shell{display:flex;m
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== JR Trade V2.2 ===== */
+.market-trading{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin:20px 0}.market-card{border:1px solid rgba(127,127,127,.18);border-radius:18px;padding:18px;background:rgba(127,127,127,.06)}.market-list,.orders-list{display:flex;flex-direction:column;gap:8px}.market-row,.order-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:0;border-bottom:1px solid rgba(127,127,127,.14);background:transparent;color:inherit;text-align:left}.market-row{width:100%;cursor:pointer;border-radius:12px}.market-row:hover{background:rgba(127,127,127,.08)}.market-right,.order-right{text-align:right}.trade-price{font-size:1.8rem;font-weight:800;margin:12px 0 18px}.trade-label{display:block;margin:10px 0 6px;font-size:.9rem}.trade-input{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:10px;border:1px solid rgba(127,127,127,.25);background:transparent;color:inherit;font:inherit}.trade-btn{width:100%;margin-top:14px;padding:12px;border:0;border-radius:11px;cursor:pointer;font:inherit;font-weight:700}.trade-btn:disabled{opacity:.55;cursor:wait}@media(max-width:800px){.market-trading{grid-template-columns:1fr}}

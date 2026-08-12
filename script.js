@@ -227,3 +227,49 @@ renderMarkets();renderPortfolio();renderHistory();updateTrade();initSession();
   window.JRTrade = window.JRTrade || {};
   window.JRTrade.loadWallet = loadWallet;
 })();
+
+/* ===== JR Trade V2.2 — Market + Demo Trading ===== */
+(function(){
+  let assets=[], selected=null;
+  const client=()=>window.supabaseClient||(window.supabaseClient=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY));
+  const $=id=>document.getElementById(id);
+  const money=n=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2}).format(Number(n||0));
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+  const msg=t=>{if($("tradeStatus"))$("tradeStatus").textContent=t};
+  async function user(){const r=await client().auth.getUser();if(r.error)throw r.error;return r.data.user}
+  async function loadMarket(){
+    const r=await client().from("assets").select("id,symbol,name,price_usd,change_24h").order("symbol");
+    if(r.error)throw r.error; assets=r.data||[];
+    $("marketList").innerHTML=assets.map(a=>`<button class="market-row" data-id="${esc(a.id)}"><div><strong>${esc(a.symbol)}</strong><div class="data-muted">${esc(a.name)}</div></div><div class="market-right"><strong>${money(a.price_usd)}</strong><div>${Number(a.change_24h||0)>=0?"+":""}${Number(a.change_24h||0).toFixed(2)}%</div></div></button>`).join("")||'<div class="data-muted">No assets available.</div>';
+    document.querySelectorAll(".market-row").forEach(b=>b.onclick=()=>select(b.dataset.id));
+    if(!selected&&assets[0])select(assets[0].id);
+  }
+  function select(id){selected=assets.find(a=>a.id===id)||null;if(!selected)return;$("selectedAssetLabel").textContent=`${selected.name} (${selected.symbol})`;$("selectedAssetPrice").textContent=money(selected.price_usd);preview();msg(`Ready to trade ${selected.symbol} in demo mode.`)}
+  function preview(){const usd=Number($("tradeUsd")?.value||0),p=Number(selected?.price_usd||0);$("tradeQuantityPreview").textContent=`Quantity: ${p? (usd/p).toLocaleString("en-US",{maximumFractionDigits:8}):"0"}`}
+  async function trade(){
+    const u=await user();if(!u)throw Error("Please sign in first.");if(!selected)throw Error("Select an asset first.");
+    const side=$("tradeSide").value,usd=Number($("tradeUsd").value),price=Number(selected.price_usd);
+    if(!usd||usd<=0)throw Error("Enter a valid USD amount.");const qty=usd/price;
+    const w=await client().from("wallets").select("id,balance_usd").eq("user_id",u.id).maybeSingle();if(w.error)throw w.error;if(!w.data)throw Error("Wallet not found.");
+    let h=await client().from("wallet_assets").select("id,amount").eq("wallet_id",w.data.id).eq("asset_id",selected.id).maybeSingle();if(h.error)throw h.error;
+    const bal=Number(w.data.balance_usd||0), old=Number(h.data?.amount||0);
+    if(side==="buy"&&usd>bal)throw Error(`Insufficient demo balance. Available: ${money(bal)}`);
+    if(side==="sell"&&qty>old+1e-12)throw Error(`Insufficient ${selected.symbol} balance.`);
+    const nb=side==="buy"?bal-usd:bal+usd, na=side==="buy"?old+qty:old-qty;
+    let r=await client().from("wallets").update({balance_usd:nb}).eq("id",w.data.id).eq("user_id",u.id);if(r.error)throw r.error;
+    if(h.data)r=await client().from("wallet_assets").update({amount:Math.max(0,na)}).eq("id",h.data.id);
+    else r=await client().from("wallet_assets").insert({wallet_id:w.data.id,asset_id:selected.id,amount:na});
+    if(r.error)throw r.error;
+    r=await client().from("orders").insert({user_id:u.id,asset_id:selected.id,side,amount_usd:usd,quantity:qty,price_usd:price,status:"completed"});if(r.error)throw r.error;
+    r=await client().from("transactions").insert({user_id:u.id,asset_id:selected.id,type:side,amount_usd:usd,quantity:qty,status:"completed"});if(r.error)throw r.error;
+    $("tradeUsd").value="";preview();msg(`${side==="buy"?"Bought":"Sold"} ${qty.toLocaleString("en-US",{maximumFractionDigits:8})} ${selected.symbol} for ${money(usd)}.`);
+    if(window.JRTrade?.loadWallet)await window.JRTrade.loadWallet();await orders();
+  }
+  async function orders(){
+    const u=await user(),box=$("ordersList");if(!u){box.textContent="Sign in to view your orders.";return}
+    const r=await client().from("orders").select("id,side,amount_usd,quantity,price_usd,status,created_at,assets(symbol)").eq("user_id",u.id).order("created_at",{ascending:false}).limit(10);
+    if(r.error)throw r.error;box.innerHTML=r.data?.length?r.data.map(o=>`<div class="order-row"><div><strong>${esc(o.side.toUpperCase())} ${esc(o.assets?.symbol||"")}</strong><div class="data-muted">${new Date(o.created_at).toLocaleString()}</div></div><div class="order-right"><strong>${money(o.amount_usd)}</strong><div class="data-muted">${Number(o.quantity).toLocaleString("en-US",{maximumFractionDigits:8})}</div></div></div>`).join(""):'<div class="data-muted">No demo orders yet.</div>';
+  }
+  async function init(){ $("tradeUsd")?.addEventListener("input",preview);$("executeTradeBtn")?.addEventListener("click",async()=>{ $("executeTradeBtn").disabled=true;msg("Processing demo trade...");try{await trade()}catch(e){console.error(e);msg(e.message||"Trade failed.")}finally{$("executeTradeBtn").disabled=false}});$("refreshMarketBtn")?.addEventListener("click",async()=>{try{await loadMarket();await orders()}catch(e){msg("Unable to refresh market.")}});try{await loadMarket();await orders()}catch(e){console.error(e);msg("Unable to load market.")}}
+  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",init):init();
+})();

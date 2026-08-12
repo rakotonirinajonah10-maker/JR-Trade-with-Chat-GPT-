@@ -191,3 +191,25 @@
 
 </body>
 </html>
+
+<section id="market-trading" class="market-trading">
+  <div class="market-card">
+    <div class="data-card-head"><div><span>Market</span><div class="data-muted">Demo prices from Supabase</div></div><button id="refreshMarketBtn" type="button" class="small-btn">Refresh</button></div>
+    <div id="marketList" class="market-list"><div class="data-muted">Loading market...</div></div>
+  </div>
+  <div class="market-card">
+    <div class="data-card-head"><div><span>Trade</span><div id="selectedAssetLabel" class="data-muted">Select an asset</div></div></div>
+    <div class="trade-price" id="selectedAssetPrice">$0.00</div>
+    <label class="trade-label" for="tradeSide">Action</label>
+    <select id="tradeSide" class="trade-input"><option value="buy">Buy</option><option value="sell">Sell</option></select>
+    <label class="trade-label" for="tradeUsd">Amount (USD)</label>
+    <input id="tradeUsd" class="trade-input" type="number" min="0.01" step="0.01" placeholder="100">
+    <div id="tradeQuantityPreview" class="data-muted">Quantity: 0</div>
+    <button id="executeTradeBtn" type="button" class="trade-btn">Execute demo trade</button>
+    <div id="tradeStatus" class="data-muted">Select an asset to start.</div>
+  </div>
+</section>
+<section id="recent-orders" class="market-card">
+  <div class="data-card-head"><div><span>Recent orders</span><div class="data-muted">Your demo trading activity</div></div></div>
+  <div id="ordersList" class="orders-list"><div class="data-muted">Loading orders...</div></div>
+</section>
