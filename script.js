@@ -21,7 +21,7 @@ function setAuthMessage(m){$("#authMessage").textContent=m||""}
 
 function renderPortfolio(){
  const html=assets.map(a=>{const value=a.price*a.amount;return `<div class="asset-row"><div class="coin-icon">${a.icon||a.symbol[0]}</div><div class="asset-name"><b>${a.name}</b><span>${Number(a.amount).toFixed(6)} ${a.symbol}</span></div><div class="asset-price"><b>${money(value)}</b><span class="${a.change>=0?'positive':'negative'}">${a.change>=0?'+':''}${a.change}%</span></div></div>`}).join("");
- $("#portfolioList").innerHTML=html;$("#walletAssets").innerHTML=html;
+ $("#portfolioList").innerHTML=html;const legacyWallet=$("#walletAssets");if(legacyWallet)legacyWallet.innerHTML=html;
  const total=assets.reduce((s,a)=>s+a.price*a.amount,0);
  $("#portfolioValue").textContent=money(total);
 }
@@ -274,34 +274,152 @@ renderMarkets();renderPortfolio();renderHistory();updateTrade();initSession();
   document.readyState==="loading"?document.addEventListener("DOMContentLoaded",init):init();
 })();
 
-/* ===== JR Trade V2.3 — Advanced Dashboard + Wallet ===== */
+/* ===== JR Trade V2.3.1 — Advanced Dashboard + Wallet FIX ===== */
 (function(){
   const client=()=>window.supabaseClient||(window.supabaseClient=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY));
   const money2=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(Number(n||0));
   const esc2=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
-  const pct=(n)=>`${Number(n||0)>=0?'+':''}${Number(n||0).toFixed(2)}%`;
+  const pct=n=>`${Number(n||0)>=0?'+':''}${Number(n||0).toFixed(2)}%`;
   const icon=s=>s==='BTC'?'₿':s==='ETH'?'Ξ':s==='SOL'?'S':'₮';
+
+  function setLoading(){
+    ['walletTotalAdvanced','walletCashAdvanced','walletCryptoAdvanced','walletPnLAdvanced','walletCashMini','portfolioValue','portfolioMGA','profitValue','portfolioChange','performance24h','cashValue','cryptoValue']
+      .forEach(id=>{ if(document.getElementById(id)) document.getElementById(id).textContent='Chargement…'; });
+    ['allocationList','walletAllocation'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<div class="data-muted">Chargement…</div>';});
+  }
+
   async function getData(){
-    const c=client(); const ur=await c.auth.getUser(); if(ur.error)throw ur.error; const user=ur.data.user;
-    if(!user)return {user:null,wallet:null,rows:[]};
-    const wr=await c.from('wallets').select('id,balance_usd').eq('user_id',user.id).maybeSingle(); if(wr.error)throw wr.error;
-    if(!wr.data)return {user,wallet:null,rows:[]};
-    const ar=await c.from('wallet_assets').select('amount,asset_id,assets(symbol,name,price_usd,change_24h)').eq('wallet_id',wr.data.id); if(ar.error)throw ar.error;
-    return {user,wallet:wr.data,rows:ar.data||[]};
+    const c=client();
+    const ur=await c.auth.getUser();
+    if(ur.error) throw ur.error;
+    const user=ur.data.user;
+    if(!user) return {user:null,wallet:null,rows:[],assets:[]};
+
+    const wr=await c.from('wallets').select('id,balance_usd').eq('user_id',user.id).maybeSingle();
+    if(wr.error) throw wr.error;
+    if(!wr.data) return {user,wallet:null,rows:[],assets:[]};
+
+    const ar=await c.from('wallet_assets').select('amount,asset_id').eq('wallet_id',wr.data.id);
+    if(ar.error) throw ar.error;
+
+    const ids=[...new Set((ar.data||[]).map(r=>r.asset_id).filter(Boolean))];
+    let assetRows=[];
+    if(ids.length){
+      const xr=await c.from('assets').select('id,symbol,name,price_usd,change_24h').in('id',ids);
+      if(xr.error) throw xr.error;
+      assetRows=xr.data||[];
+    }
+    const byId=new Map(assetRows.map(a=>[String(a.id),a]));
+    const rows=(ar.data||[]).map(r=>({...r,assets:byId.get(String(r.asset_id))||{}}));
+    return {user,wallet:wr.data,rows};
   }
+
   function render(rows,wallet){
-    const cash=Number(wallet?.balance_usd||0); const items=rows.map(r=>{const a=r.assets||{};const amount=Number(r.amount||0),price=Number(a.price_usd||0),value=amount*price,change=Number(a.change_24h||0);return {...a,amount,value,change}}).filter(x=>x.amount>0);
-    const crypto=items.reduce((s,x)=>s+x.value,0), total=cash+crypto, pnl=items.reduce((s,x)=>s+x.value*x.change/100,0), base=total||1;
-    const active=items.filter(x=>x.value>0); const syms=active.map(x=>x.symbol).join(' · ')||'Aucun actif';
-    set('portfolioValue',money2(total));set('portfolioMGA',`≈ ${Math.round(total*2400).toLocaleString('fr-FR')} MGA`);set('profitValue',`${pnl>=0?'+':''}${money2(pnl)}`);set('portfolioChange',pct(total?100*pnl/total:0));
-    set('assetCount',String(active.length));set('assetCountLarge',`${active.length} crypto`);set('assetSymbols',syms);set('walletTotalAdvanced',money2(total));set('walletCashAdvanced',`Liquidités : ${money2(cash)}`);set('walletCryptoAdvanced',money2(crypto));set('walletPnLAdvanced',`${pnl>=0?'+':''}${money2(pnl)}`);set('walletCashMini',money2(cash));set('walletAssetCount',`${active.length} actif${active.length>1?'s':''}`);set('cashValue',money2(cash));set('cryptoValue',money2(crypto));set('performance24h',`${pnl>=0?'+':''}${money2(pnl)}`);
-    const fill=document.getElementById('performanceBarFill');if(fill)fill.style.width=`${Math.min(100,Math.max(8,50+(pnl/Math.max(total,1))*500))}%`;
-    const makeList=(id)=>{const box=document.getElementById(id);if(!box)return;if(!active.length){box.innerHTML='<div class="data-muted">Aucun actif détenu pour le moment.</div>';return}box.innerHTML=active.map(x=>{const share=100*x.value/base;return `<div class="allocation-item"><div><div class="allocation-head"><strong>${icon(x.symbol)} ${esc2(x.symbol)}</strong><span>${share.toFixed(1)}%</span></div><div class="data-muted">${esc2(x.name)} · ${x.amount.toLocaleString('en-US',{maximumFractionDigits:8})}</div><div class="allocation-track"><div class="allocation-fill" style="width:${Math.min(100,share)}%"></div></div></div><strong>${money2(x.value)}</strong></div>`}).join('')};
-    makeList('allocationList');makeList('walletAllocation');
+    const cash=Number(wallet?.balance_usd||0);
+    const items=rows.map(r=>{
+      const a=r.assets||{};
+      const amount=Number(r.amount||0);
+      const price=Number(a.price_usd||0);
+      return {...a,amount,value:amount*price,change:Number(a.change_24h||0)};
+    }).filter(x=>x.amount>0);
+
+    const crypto=items.reduce((s,x)=>s+x.value,0);
+    const total=cash+crypto;
+    const pnl=items.reduce((s,x)=>s+x.value*x.change/100,0);
+    const base=total||1;
+    const active=items.filter(x=>x.value>0);
+    const syms=active.map(x=>x.symbol).join(' · ')||'Aucun actif';
+
+    set('portfolioValue',money2(total));
+    set('portfolioMGA',`≈ ${Math.round(total*2400).toLocaleString('fr-FR')} MGA`);
+    set('profitValue',`${pnl>=0?'+':''}${money2(pnl)}`);
+    set('portfolioChange',pct(total?100*pnl/total:0));
+    set('assetCount',String(active.length));
+    set('assetCountLarge',`${active.length} crypto`);
+    set('assetSymbols',syms);
+    set('walletTotalAdvanced',money2(total));
+    set('walletCashAdvanced',`Liquidités : ${money2(cash)}`);
+    set('walletCryptoAdvanced',money2(crypto));
+    set('walletPnLAdvanced',`${pnl>=0?'+':''}${money2(pnl)}`);
+    set('walletCashMini',money2(cash));
+    set('walletAssetCount',`${active.length} actif${active.length>1?'s':''}`);
+    set('cashValue',money2(cash));
+    set('cryptoValue',money2(crypto));
+    set('performance24h',`${pnl>=0?'+':''}${money2(pnl)}`);
+
+    const fill=document.getElementById('performanceBarFill');
+    if(fill) fill.style.width=`${Math.min(100,Math.max(8,50+(pnl/Math.max(total,1))*500))}%`;
+
+    const makeList=id=>{
+      const box=document.getElementById(id);
+      if(!box)return;
+      if(!active.length){
+        box.innerHTML='<div class="data-muted">Aucun actif détenu pour le moment.</div>';
+        return;
+      }
+      box.innerHTML=active.map(x=>{
+        const share=100*x.value/base;
+        return `<div class="allocation-item">
+          <div>
+            <div class="allocation-head"><strong>${icon(x.symbol)} ${esc2(x.symbol)}</strong><span>${share.toFixed(1)}%</span></div>
+            <div class="data-muted">${esc2(x.name||'')} · ${x.amount.toLocaleString('en-US',{maximumFractionDigits:8})}</div>
+            <div class="allocation-track"><div class="allocation-fill" style="width:${Math.min(100,share)}%"></div></div>
+          </div>
+          <strong>${money2(x.value)}</strong>
+        </div>`;
+      }).join('');
+    };
+
+    makeList('allocationList');
+    makeList('walletAllocation');
+
+    // Keep the main dashboard portfolio synchronized with Supabase.
+    const main=document.getElementById('portfolioList');
+    if(main){
+      main.innerHTML=active.length?active.map(x=>`
+        <div class="asset-row">
+          <div class="coin-icon">${icon(x.symbol)}</div>
+          <div class="asset-name"><b>${esc2(x.name||x.symbol)}</b><span>${x.amount.toLocaleString('en-US',{maximumFractionDigits:8})} ${esc2(x.symbol)}</span></div>
+          <div class="asset-price"><b>${money2(x.value)}</b><span class="${x.change>=0?'positive':'negative'}">${x.change>=0?'+':''}${x.change}%</span></div>
+        </div>`).join(''):'<div class="data-muted">Aucun actif détenu pour le moment.</div>';
+    }
+
+    const walletBox=document.getElementById('walletAssetsMain');
+    if(walletBox){
+      walletBox.innerHTML=active.length?active.map(x=>`
+        <div class="asset-row">
+          <div class="coin-icon">${icon(x.symbol)}</div>
+          <div class="asset-name"><b>${esc2(x.name||x.symbol)}</b><span>${x.amount.toLocaleString('en-US',{maximumFractionDigits:8})} ${esc2(x.symbol)}</span></div>
+          <div class="asset-price"><b>${money2(x.value)}</b><span class="${x.change>=0?'positive':'negative'}">${x.change>=0?'+':''}${x.change}%</span></div>
+        </div>`).join(''):'<div class="data-muted">Aucun actif détenu pour le moment.</div>';
+    }
   }
-  async function loadAdvanced(){try{const d=await getData();if(!d.user){render([],null);return}render(d.rows,d.wallet)}catch(e){console.error('Advanced wallet:',e)}}
-  window.JRTrade=window.JRTrade||{};window.JRTrade.loadAdvancedWallet=loadAdvanced;
-  const start=()=>{loadAdvanced();document.getElementById('refreshAdvancedBtn')?.addEventListener('click',loadAdvanced);const c=client();c.auth.onAuthStateChange(()=>setTimeout(loadAdvanced,0))};
+
+  async function loadAdvanced(){
+    setLoading();
+    try{
+      const d=await getData();
+      if(!d.user){render([],null);return;}
+      if(!d.wallet){render([],null);return;}
+      render(d.rows,d.wallet);
+    }catch(e){
+      console.error('JR Trade V2.3.1 wallet error:',e);
+      ['walletTotalAdvanced','walletCashAdvanced','walletCryptoAdvanced','walletPnLAdvanced','walletCashMini','portfolioValue','portfolioMGA','profitValue','portfolioChange','performance24h','cashValue','cryptoValue']
+        .forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='Erreur de chargement';});
+      ['allocationList','walletAllocation'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<div class="data-muted">Impossible de charger les données du portefeuille.</div>';});
+    }
+  }
+
+  window.JRTrade=window.JRTrade||{};
+  window.JRTrade.loadAdvancedWallet=loadAdvanced;
+
+  const start=()=>{
+    loadAdvanced();
+    document.getElementById('refreshAdvancedBtn')?.addEventListener('click',loadAdvanced);
+    const c=client();
+    c.auth.onAuthStateChange(()=>setTimeout(loadAdvanced,250));
+  };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
+

@@ -17,3 +17,7 @@ Remplace les fichiers du dépôt GitHub par ceux de cette archive, puis commit d
 **Important :** `supabase-config.js` contient uniquement la Project URL et la Publishable key. Ne mets jamais une clé `sb_secret_` dans le navigateur.
 
 Le trading reste en mode démo et ne réalise aucune transaction blockchain réelle.
+
+
+## JR Trade V2.3.1
+Correctif du chargement du Dashboard et du Wallet : synchronisation des soldes, actifs et allocation avec Supabase. Aucun changement de clé Supabase requis.
