@@ -64,20 +64,20 @@
 
           <div class="stat-grid">
             <article class="card balance-card">
-              <div class="card-top"><span>Valeur du portefeuille</span><span class="pill positive">+8,42%</span></div>
-              <h2 id="portfolioValue">$24,680.42</h2>
-              <p class="muted">≈ 59,400,000 MGA</p>
+              <div class="card-top"><span>Valeur du portefeuille</span><span class="pill positive" id="portfolioChange">+0,00%</span></div>
+              <h2 id="portfolioValue">$0.00</h2>
+              <p class="muted" id="portfolioMGA">≈ 0 MGA</p>
               <div class="mini-chart"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
             </article>
             <article class="card">
               <div class="card-top"><span>Profit / perte</span><span>24 h</span></div>
-              <h2 class="positive" id="profitValue">+$1,924.60</h2>
+              <h2 class="positive" id="profitValue">+$0.00</h2>
               <p class="muted">Performance du portefeuille</p>
             </article>
             <article class="card">
-              <div class="card-top"><span>Actifs</span><span>4</span></div>
-              <h2>4 <small>crypto</small></h2>
-              <p class="muted">BTC · ETH · SOL · USDT</p>
+              <div class="card-top"><span>Actifs</span><span id="assetCount">0</span></div>
+              <h2 id="assetCountLarge">0 <small>crypto</small></h2>
+              <p class="muted" id="assetSymbols">Aucun actif</p>
             </article>
           </div>
 
@@ -92,12 +92,36 @@
               <div id="marketPreview" class="market-list"></div>
             </article>
           </div>
+
+          <div class="advanced-grid">
+            <article class="card advanced-card">
+              <div class="section-title"><div><h3>Répartition du portefeuille</h3><p class="muted">Valeur actuelle par actif</p></div><button class="small-btn" id="refreshAdvancedBtn">Actualiser</button></div>
+              <div id="allocationList" class="allocation-list"><div class="data-muted">Chargement…</div></div>
+            </article>
+            <article class="card advanced-card">
+              <div class="section-title"><div><h3>Performance estimée</h3><p class="muted">Variation 24 h des actifs détenus</p></div></div>
+              <div class="performance-big" id="performance24h">$0.00</div>
+              <div class="performance-bar"><span id="performanceBarFill"></span></div>
+              <div class="performance-meta"><span>Liquidités</span><strong id="cashValue">$0.00</strong></div>
+              <div class="performance-meta"><span>Crypto</span><strong id="cryptoValue">$0.00</strong></div>
+            </article>
+          </div>
         </section>
 
         <section class="page" id="page-wallet">
           <div class="page-heading"><div><p class="eyebrow">WALLET</p><h1>Votre portefeuille</h1><p class="muted">Suivez vos actifs numériques.</p></div><button class="btn primary" id="receiveBtn">＋ Recevoir</button></div>
-          <article class="card wallet-hero"><div><span class="muted">Solde total estimé</span><h2>$24,680.42</h2><div class="wallet-actions"><button class="btn primary" data-page="trade">Acheter / Vendre</button><button class="btn ghost" id="copyAddress">Copier l'adresse</button></div></div><div class="wallet-address"><span>Adresse de démonstration</span><code>0xJR...7A21</code></div></article>
-          <article class="card"><div class="section-title"><h3>Vos actifs</h3><span class="muted">4 actifs</span></div><div id="walletAssets" class="asset-list"></div></article>
+          <article class="card wallet-hero"><div><span class="muted">Valeur totale du portefeuille</span><h2 id="walletTotalAdvanced">$0.00</h2>
+          <p class="muted" id="walletCashAdvanced">Liquidités : $0.00</p><div class="wallet-actions"><button class="btn primary" data-page="trade">Acheter / Vendre</button><button class="btn ghost" id="copyAddress">Copier l'adresse</button></div></div><div class="wallet-address"><span>Adresse de démonstration</span><code>0xJR...7A21</code></div></article>
+          <article class="card"><div class="section-title"><h3>Vos actifs</h3><span class="muted" id="walletAssetCount">0 actifs</span></div><div id="walletAssetsMain" class="asset-list"></div>
+          <div class="wallet-summary-grid">
+            <div class="wallet-mini"><span>Valeur crypto</span><strong id="walletCryptoAdvanced">$0.00</strong></div>
+            <div class="wallet-mini"><span>Variation 24 h</span><strong id="walletPnLAdvanced">$0.00</strong></div>
+            <div class="wallet-mini"><span>Liquidités</span><strong id="walletCashMini">$0.00</strong></div>
+          </div></article>
+          <article class="card advanced-card wallet-allocation-card">
+            <div class="section-title"><div><h3>Allocation</h3><p class="muted">Poids de chaque crypto</p></div></div>
+            <div id="walletAllocation" class="allocation-list"><div class="data-muted">Chargement…</div></div>
+          </article>
         </section>
 
         <section class="page" id="page-markets">
